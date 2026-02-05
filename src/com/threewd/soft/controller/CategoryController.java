@@ -25,41 +25,47 @@ public class CategoryController extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		action = request.getParameter("action");
-
 		String categoryIdStr = request.getParameter("categoryId");
+
 		System.out.println(action);
 
 		if (action == null) {
 			action = "display";
 		}
 
-		if ("display".equals(action)) {
+		switch (action) {
 
+		case "display":
 			List<Category> categoryList = catService.getAllCategory();
 			request.setAttribute("categoryList", categoryList);
-
 			request.getRequestDispatcher("views/displayCategories.jsp").forward(request, response);
-			return; // Imp
-		} else if ("update".equals(action)) {
-			Category category = new Category();
-			int catId = Integer.parseInt(categoryIdStr);
-			System.out.println("Cat id get req : " + catId);
+			return; // Important
 
-			category = catService.getCategoryById(catId);
-			System.out.println("Category obj : " + category);
+		case "update":
+			int catId = Integer.parseInt(categoryIdStr);
+//			System.out.println("Cat id get req : " + catId);
+
+			Category category = catService.getCategoryById(catId);
+//			System.out.println("Category obj : " + category);
 
 			if (category == null) {
 				response.sendRedirect("categoryController?action=display");
 				return;
 			}
+
 			request.setAttribute("category", category);
 			request.getRequestDispatcher("views/updateCategory.jsp").forward(request, response);
-		} else if ("delete".equals(action)) {
-			request.getRequestDispatcher("views/deleteCategory.jsp").forward(request, response);
-		} else {
+			break;
 
+		case "delete":
+			request.getRequestDispatcher("views/deleteCategory.jsp").forward(request, response);
+			break;
+
+		default:
 			request.getRequestDispatcher("views/addCategory.jsp").forward(request, response);
+			break;
 		}
+
 	}
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)

@@ -7,10 +7,12 @@ import com.threewd.soft.interfaces.SupplierDAO;
 import com.threewd.soft.interfaces.SupplierService;
 import com.threewd.soft.model.OperationResult;
 import com.threewd.soft.model.Supplier;
+import com.threewd.soft.util.DBUtil;
 import com.threewd.soft.util.SupplierUtil;
 
 public class SupplierServiceImpl implements SupplierService{
 	private SupplierDAO supplierDao= new SupplierDAOImpl();
+	OperationResult oprationResult = new OperationResult();
 	@Override
 	public OperationResult addSupplier(Supplier supplier) {
 		if(supplier == null) {
@@ -35,9 +37,44 @@ public class SupplierServiceImpl implements SupplierService{
 	public Supplier getSuplierById(int supId) {
 		Supplier supplierBean = supplierDao.getSuplierById(supId);
 		if(supplierBean == null) {
-			System.out.println("Supplier cannot be empty");
+//			System.out.println("Supplier cannot be empty");
+			oprationResult.setSuccess(false);
+			oprationResult.setMessage("Supplier Not Found");
+			return null;
 		}
+		oprationResult.setSuccess(true);
+		oprationResult.setMessage("Supplier Found");
 		return supplierBean;
 	}
+	@Override
+	public OperationResult updateSupplier(Supplier supplier) {
+
+	    if (supplier == null) {
+	        return new OperationResult(false, "Supplier data is missing");
+	    }
+
+	    if (supplier.getSupplierId() <= 0) {
+	        return new OperationResult(false, "Invalid supplier ID");
+	    }
+
+	    if (supplier.getSupplierName() == null || supplier.getSupplierName().trim().isEmpty()) {
+	        return new OperationResult(false, "Supplier name is required");
+	    }
+
+	    return supplierDao.updateSupplier(supplier);
+	}
+	@Override
+	public OperationResult deleteSupplier(int supId) {
+
+	    int rows = supplierDao.deleteSupplier(supId);
+
+	    if (DBUtil.isRowAffected(rows)) {
+	        return new OperationResult(true, "Supplier deleted successfully");
+	    }
+
+	    return new OperationResult(false, "Supplier not found");
+	}
+
+
 
 }

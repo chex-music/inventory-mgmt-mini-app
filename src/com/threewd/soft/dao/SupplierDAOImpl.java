@@ -93,7 +93,7 @@ public class SupplierDAOImpl implements SupplierDAO {
 	@Override
 	public List<Supplier> getAllSuppliers() {
 		List<Supplier> supplierList = new ArrayList<>();
-		String sql = "SELECT supplier_id, supplier_name FROM SUPPLIER_MASTER";
+		String sql = "SELECT supplier_id, supplier_name, contact_no, email FROM SUPPLIER_MASTER";
 
 		try (Connection con = DBConnection.getConnection();
 				PreparedStatement pstm = con.prepareStatement(sql);
@@ -102,6 +102,8 @@ public class SupplierDAOImpl implements SupplierDAO {
 				Supplier supplier = new Supplier();
 				supplier.setSupplierId(rs.getInt("supplier_id"));
 				supplier.setSupplierName(rs.getString("supplier_name"));
+				supplier.setContactNo(rs.getString("contact_no"));
+				supplier.setEmail(rs.getString("email"));
 				supplierList.add(supplier);
 			}
 
@@ -112,22 +114,113 @@ public class SupplierDAOImpl implements SupplierDAO {
 	}
 
 	public Supplier getSuplierById(int supId) {
-		String sql = "SELECT supplier_name FROM SUPPLIER_MASTER WHERE supplier_id = ?";
-		Supplier supplier = new Supplier();
-		try (Connection con = DBConnection.getConnection(); PreparedStatement pstm = con.prepareStatement(sql);) {
-			pstm.setInt(1, supplier.getSupplierId());
-			System.out.println("Supplier id :" + supplier.getSupplierId());
+		String sql = "SELECT supplier_id, supplier_name, contact_no, email "
+				+ "FROM SUPPLIER_MASTER WHERE supplier_id = ?";
+		Supplier supplier = null;
+		int i = 1;
+		try (Connection con = DBConnection.getConnection(); 
+			PreparedStatement pstm = con.prepareStatement(sql);) {
+			pstm.setInt(i++, supId);
 			ResultSet rs = pstm.executeQuery();
 			if (rs.next()) {
+				supplier = new Supplier();
+				supplier.setSupplierId(rs.getInt("supplier_id"));
 				supplier.setSupplierName(rs.getString("supplier_name"));
+				supplier.setContactNo(rs.getString("contact_no"));
+				supplier.setEmail(rs.getString("email"));
 			} else {
 				return null;
 			}
+			System.out.println("Supplier id :" + supplier.getSupplierId());
 
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 		return supplier;
 	}
+
+	public OperationResult updateSupplier(Supplier supplier) {
+
+	    String sql = "UPDATE SUPPLIER_MASTER "
+	               + "SET supplier_name = ?, contact_no = ?, email = ? "
+	               + "WHERE supplier_id = ?";
+
+	    int affectedRows = 0;
+	    int i = 1;
+	    String message;
+
+	    try (Connection con = DBConnection.getConnection();
+	         PreparedStatement pstm = con.prepareStatement(sql)) {
+
+	        pstm.setString(i++, supplier.getSupplierName());
+	        pstm.setString(i++, supplier.getContactNo());
+	        pstm.setString(i++, supplier.getEmail());
+	        pstm.setInt(i++, supplier.getSupplierId());
+
+	        affectedRows = pstm.executeUpdate();
+	        System.out.println("Affected rows in DAO " + affectedRows);
+
+	        if (DBUtil.isRowAffected(affectedRows)) {
+	            return new OperationResult(
+	                true,
+	                "Supplier " + supplier.getSupplierName() + " updated successfully"
+	            );
+	        }
+
+	    } catch (SQLException e) {
+
+	        switch (e.getErrorCode()) {
+
+	            case 1049:
+	                message = "Database not found";
+	                break;
+
+	            case 1146:
+	                message = "Table not found";
+	                break;
+
+	            case 1054:
+	                message = "Column not found";
+	                break;
+
+	            case 1451:
+	                message = "Cannot update. Data is in use";
+	                break;
+
+	            case 1452:
+	                message = "Invalid reference data";
+	                break;
+
+	            default:
+	                message = "Database error occurred";
+	        }
+
+	        e.printStackTrace();
+	        return new OperationResult(false, message);
+	    }
+
+	    return new OperationResult(false, "Something went wrong");
+	}
+
+	@Override
+	public int deleteSupplier(int supId) {
+
+	    String sql = "DELETE FROM SUPPLIER_MASTER WHERE supplier_id = ?";
+	    int affectedRows = 0;
+
+	    try (Connection con = DBConnection.getConnection();
+	         PreparedStatement ps = con.prepareStatement(sql)) {
+
+	        ps.setInt(1, supId);
+	        affectedRows = ps.executeUpdate();
+
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	    }
+
+	    return affectedRows;
+	}
+
+
 
 }

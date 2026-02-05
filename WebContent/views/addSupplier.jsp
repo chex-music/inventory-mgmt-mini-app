@@ -86,6 +86,7 @@ button:hover {
 			<button type="submit">Add Supplier</button>
 		</form>
 		<a href="index.jsp">⬅ Back to Dashboard</a>
+		<a href="supplierController?action=display">View Table</a>
 		<div class="msg">
 			<c:choose>
 				<c:when test="${success}">

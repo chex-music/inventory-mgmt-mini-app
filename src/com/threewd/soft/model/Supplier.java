@@ -11,6 +11,7 @@ public class Supplier {
 	}
 
 	public Supplier(int supplierId, String supplierName, String contactNo, String email) {
+		super();
 		this.supplierId = supplierId;
 		this.supplierName = supplierName;
 		this.contactNo = contactNo;
@@ -48,4 +49,11 @@ public class Supplier {
 	public void setEmail(String email) {
 		this.email = email;
 	}
+
+	@Override
+	public String toString() {
+		return "Supplier [supplierId=" + supplierId + ", supplierName=" + supplierName + ", contactNo=" + contactNo
+				+ ", email=" + email + "]";
+	}
+	
 }
